@@ -1,3 +1,4 @@
+using EcommerceTests.Pages;
 using Microsoft.Playwright.NUnit;
 using NUnit.Framework;
 
@@ -8,48 +9,50 @@ public class CheckoutTests : PageTest
     [Test]
     public async Task ValidUser_ShouldCompleteCheckoutSuccessfully()
     {
-        await Page.GotoAsync("https://www.saucedemo.com/");
+        var loginPage = new LoginPage(Page);
+        var inventoryPage = new InventoryPage(Page);
+        var checkoutPage = new CheckoutPage(Page);
 
-        await Page.Locator("#user-name").FillAsync("standard_user");
-        await Page.Locator("#password").FillAsync("secret_sauce");
-        await Page.Locator("#login-button").ClickAsync();
+        await loginPage.NavigateAsync();
+        await loginPage.LoginAsync("standard_user", "secret_sauce");
 
-        await Page.Locator("#add-to-cart-sauce-labs-backpack").ClickAsync();
-        await Page.Locator(".shopping_cart_link").ClickAsync();
+        await inventoryPage.AddBackpackToCartAsync();
+        await inventoryPage.OpenCartAsync();
 
-        await Page.Locator("#checkout").ClickAsync();
+        await checkoutPage.StartCheckoutAsync();
+        await checkoutPage.EnterCustomerInfoAsync(
+            "Aalyia",
+            "Castle",
+            "43207");
 
-        await Page.Locator("#first-name").FillAsync("Aalyia");
-        await Page.Locator("#last-name").FillAsync("Castle");
-        await Page.Locator("#postal-code").FillAsync("43207");
+        await checkoutPage.ContinueAsync();
 
-        await Page.Locator("#continue").ClickAsync();
-
-        await Expect(Page.Locator(".summary_info"))
+        await Expect(checkoutPage.Summary)
             .ToBeVisibleAsync();
 
-        await Page.Locator("#finish").ClickAsync();
+        await checkoutPage.FinishAsync();
 
-        await Expect(Page.Locator(".complete-header"))
+        await Expect(checkoutPage.ConfirmationMessage)
             .ToHaveTextAsync("Thank you for your order!");
     }
 
     [Test]
     public async Task Checkout_ShouldShowError_WhenRequiredFieldsAreMissing()
     {
-        await Page.GotoAsync("https://www.saucedemo.com/");
+        var loginPage = new LoginPage(Page);
+        var inventoryPage = new InventoryPage(Page);
+        var checkoutPage = new CheckoutPage(Page);
 
-        await Page.Locator("#user-name").FillAsync("standard_user");
-        await Page.Locator("#password").FillAsync("secret_sauce");
-        await Page.Locator("#login-button").ClickAsync();
+        await loginPage.NavigateAsync();
+        await loginPage.LoginAsync("standard_user", "secret_sauce");
 
-        await Page.Locator("#add-to-cart-sauce-labs-backpack").ClickAsync();
-        await Page.Locator(".shopping_cart_link").ClickAsync();
+        await inventoryPage.AddBackpackToCartAsync();
+        await inventoryPage.OpenCartAsync();
 
-        await Page.Locator("#checkout").ClickAsync();
-        await Page.Locator("#continue").ClickAsync();
+        await checkoutPage.StartCheckoutAsync();
+        await checkoutPage.ContinueAsync();
 
-        await Expect(Page.Locator("[data-test='error']"))
+        await Expect(checkoutPage.ErrorMessage)
             .ToContainTextAsync("First Name is required");
     }
 }

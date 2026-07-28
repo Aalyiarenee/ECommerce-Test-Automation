@@ -1,3 +1,4 @@
+using EcommerceTests.Pages;
 using Microsoft.Playwright.NUnit;
 using NUnit.Framework;
 
@@ -8,34 +9,36 @@ public class CartTests : PageTest
     [Test]
     public async Task ValidUser_ShouldAddProductToCart()
     {
-        await Page.GotoAsync("https://www.saucedemo.com/");
+        var loginPage = new LoginPage(Page);
+        var inventoryPage = new InventoryPage(Page);
+        var cartPage = new CartPage(Page);
 
-        await Page.Locator("#user-name").FillAsync("standard_user");
-        await Page.Locator("#password").FillAsync("secret_sauce");
-        await Page.Locator("#login-button").ClickAsync();
+        await loginPage.NavigateAsync();
+        await loginPage.LoginAsync("standard_user", "secret_sauce");
 
-        await Page.Locator("#add-to-cart-sauce-labs-backpack").ClickAsync();
-        await Page.Locator(".shopping_cart_link").ClickAsync();
+        await inventoryPage.AddBackpackToCartAsync();
+        await inventoryPage.OpenCartAsync();
 
-        await Expect(Page.Locator(".inventory_item_name"))
+        await Expect(cartPage.BackpackName)
             .ToHaveTextAsync("Sauce Labs Backpack");
     }
 
     [Test]
     public async Task ValidUser_ShouldRemoveProductFromCart()
     {
-        await Page.GotoAsync("https://www.saucedemo.com/");
+        var loginPage = new LoginPage(Page);
+        var inventoryPage = new InventoryPage(Page);
+        var cartPage = new CartPage(Page);
 
-        await Page.Locator("#user-name").FillAsync("standard_user");
-        await Page.Locator("#password").FillAsync("secret_sauce");
-        await Page.Locator("#login-button").ClickAsync();
+        await loginPage.NavigateAsync();
+        await loginPage.LoginAsync("standard_user", "secret_sauce");
 
-        await Page.Locator("#add-to-cart-sauce-labs-backpack").ClickAsync();
-        await Page.Locator(".shopping_cart_link").ClickAsync();
+        await inventoryPage.AddBackpackToCartAsync();
+        await inventoryPage.OpenCartAsync();
 
-        await Page.Locator("#remove-sauce-labs-backpack").ClickAsync();
+        await cartPage.RemoveBackpackAsync();
 
-        await Expect(Page.Locator(".inventory_item_name"))
+        await Expect(cartPage.BackpackName)
             .ToHaveCountAsync(0);
     }
 }

@@ -1,3 +1,4 @@
+using EcommerceTests.Pages;
 using Microsoft.Playwright.NUnit;
 using NUnit.Framework;
 
@@ -8,11 +9,10 @@ public class LoginTests : PageTest
     [Test]
     public async Task ValidUser_ShouldLoginSuccessfully()
     {
-        await Page.GotoAsync("https://www.saucedemo.com/");
+        var loginPage = new LoginPage(Page);
 
-        await Page.Locator("#user-name").FillAsync("standard_user");
-        await Page.Locator("#password").FillAsync("secret_sauce");
-        await Page.Locator("#login-button").ClickAsync();
+        await loginPage.NavigateAsync();
+        await loginPage.LoginAsync("standard_user", "secret_sauce");
 
         await Expect(Page)
             .ToHaveURLAsync("https://www.saucedemo.com/inventory.html");
@@ -24,13 +24,12 @@ public class LoginTests : PageTest
     [Test]
     public async Task InvalidUser_ShouldSeeErrorMessage()
     {
-        await Page.GotoAsync("https://www.saucedemo.com/");
+        var loginPage = new LoginPage(Page);
 
-        await Page.Locator("#user-name").FillAsync("invalid_user");
-        await Page.Locator("#password").FillAsync("wrong_password");
-        await Page.Locator("#login-button").ClickAsync();
+        await loginPage.NavigateAsync();
+        await loginPage.LoginAsync("invalid_user", "wrong_password");
 
-        await Expect(Page.Locator("[data-test='error']"))
+        await Expect(loginPage.ErrorMessage)
             .ToContainTextAsync("Username and password do not match");
     }
 }
